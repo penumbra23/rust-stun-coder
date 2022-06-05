@@ -234,6 +234,24 @@ impl StunAttribute {
             StunAttributeType::ErrorCode => Self::decode_error_code(&attr_data),
             StunAttributeType::UnknownAttributes => Self::decode_unknown_attributes(&attr_data),
             StunAttributeType::UseCandidate => Ok(Self::UseCandidate),
+
+            // NOTE: EXPERIMENTAL
+            StunAttributeType::MemberList => {
+                let raw_val = Self::decode_utf8_val(&attr_data)?;
+
+                Ok(Self::MemberList {
+                    room_name: raw_val,
+                })
+            }
+
+            // NOTE: EXPERIMENTAL
+            StunAttributeType::MemberEntry => {
+                let socket_addr = Self::decode_address(&attr_data, false, transaction_id)?;
+
+                Ok(Self::MemberEntry {
+                    socket_addr
+                })
+            }
         }
     }
 }

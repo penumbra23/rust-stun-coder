@@ -299,4 +299,12 @@ pub enum StunAttribute {
         /// Tiebreaker value used for ICE role conflict resolution defined in [Section 7.3.1.1 of RFC8445](https://tools.ietf.org/html/rfc8445#section-7.3.1.1)
         tie_breaker: u64,
     },
+
+    MemberList {
+        room_name: String,
+    },
+
+    MemberEntry {
+        socket_addr: SocketAddr,
+    }
 }

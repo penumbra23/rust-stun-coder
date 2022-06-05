@@ -233,6 +233,18 @@ impl StunAttribute {
                 Self::encode_unknown_attributes(types.clone()),
             ),
             StunAttribute::UseCandidate => (StunAttributeType::UseCandidate, Ok(Vec::new())),
+
+            // NOTE: EXPERIMENTAL
+            StunAttribute::MemberList { room_name } => (
+                StunAttributeType::MemberList,
+                Self::encode_utf8_val(room_name, Some(763)),
+            ),
+
+            // NOTE: EXPERIMENTAL
+            StunAttribute::MemberEntry { socket_addr } => (
+                StunAttributeType::MemberEntry,
+                Self::encode_address(socket_addr, false, transaction_id),
+            )
         };
 
         // Wrap the encoded attribute data into TLV

@@ -16,4 +16,8 @@ pub enum StunAttributeType {
     Software = 0x8022,
     AlternateServer = 0x8023,
     Fingerprint = 0x8028,
+
+    // NOTE: EXPERIMENTAL
+    MemberList = 0xBABA,
+    MemberEntry = 0xABBA,
 }
