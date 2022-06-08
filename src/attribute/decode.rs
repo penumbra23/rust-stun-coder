@@ -111,6 +111,28 @@ impl StunAttribute {
         Ok(NetworkEndian::read_u64(bytes))
     }
 
+    fn decode_u32_string_val(bytes: &[u8]) -> Result<(u32, String), AttributeDecodeError> {
+        // Prevent NetworkEndian::read_u32 from panicking if we don't have enough data to read from.
+        if bytes.len() < 4 {
+            return Err(AttributeDecodeError::InsufficientData());
+        }
+
+        let u32_val = Self::decode_u32_val(bytes)?;
+        let str_val = Self::decode_utf8_val(&bytes[4..])?;
+        Ok((u32_val, str_val))
+    }
+
+    fn decode_u32_addr_val(bytes: &[u8], is_xored: bool, transaction_id: StunTransactionId) -> Result<(u32, SocketAddr), AttributeDecodeError> {
+        // Prevent NetworkEndian::read_u32 from panicking if we don't have enough data to read from.
+        if bytes.len() < 4 {
+            return Err(AttributeDecodeError::InsufficientData());
+        }
+
+        let u32_val = Self::decode_u32_val(bytes)?;
+        let addr_val = Self::decode_address(&bytes[4..], is_xored, transaction_id)?;
+        Ok((u32_val, addr_val))
+    }
+
     // Decodes the ErrorCode attribute.
     fn decode_error_code(bytes: &[u8]) -> Result<Self, AttributeDecodeError> {
         // Prevent NetworkEndian::read_u32 from panicking if we don't have enough data to read from.
@@ -237,19 +259,21 @@ impl StunAttribute {
 
             // NOTE: EXPERIMENTAL
             StunAttributeType::MemberList => {
-                let raw_val = Self::decode_utf8_val(&attr_data)?;
+                let raw_val = Self::decode_u32_string_val(&attr_data)?;
 
                 Ok(Self::MemberList {
-                    room_name: raw_val,
+                    id: raw_val.0,
+                    room_name: raw_val.1,
                 })
             }
 
             // NOTE: EXPERIMENTAL
             StunAttributeType::MemberEntry => {
-                let socket_addr = Self::decode_address(&attr_data, false, transaction_id)?;
+                let raw_val = Self::decode_u32_addr_val(&attr_data, false, transaction_id)?;
 
                 Ok(Self::MemberEntry {
-                    socket_addr
+                    id: raw_val.0,
+                    socket_addr: raw_val.1,
                 })
             }
         }

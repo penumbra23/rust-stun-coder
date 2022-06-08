@@ -301,10 +301,12 @@ pub enum StunAttribute {
     },
 
     MemberList {
+        id: u32,
         room_name: String,
     },
 
     MemberEntry {
+        id: u32,
         socket_addr: SocketAddr,
     }
 }

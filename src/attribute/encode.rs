@@ -138,6 +138,22 @@ impl StunAttribute {
         Ok(buf)
     }
 
+    fn encode_u32_string_tuple(u32_val: u32, str_val: &String, limit: Option<usize>) -> Result<Vec<u8>, AttributeEncodeError> {
+        let mut buf: Vec<u8> = Self::encode_u32_val(u32_val)?;
+        let mut str_bytes = Self::encode_utf8_val(str_val, limit)?;
+        buf.append(&mut str_bytes);
+
+        Ok(buf)
+    }
+
+    fn encode_u32_address_tuple(u32_val: u32, addr_val: &SocketAddr, is_xored: bool, transaction_id: StunTransactionId) -> Result<Vec<u8>, AttributeEncodeError> {
+        let mut buf: Vec<u8> = Self::encode_u32_val(u32_val)?;
+        let mut addr_bytes = Self::encode_address(addr_val, is_xored, transaction_id)?;
+        buf.append(&mut addr_bytes);
+
+        Ok(buf)
+    }
+
     // Encodes the ErrorCode attribute.
     fn encode_error_code(
         class: u8,
@@ -235,15 +251,15 @@ impl StunAttribute {
             StunAttribute::UseCandidate => (StunAttributeType::UseCandidate, Ok(Vec::new())),
 
             // NOTE: EXPERIMENTAL
-            StunAttribute::MemberList { room_name } => (
+            StunAttribute::MemberList { id, room_name } => (
                 StunAttributeType::MemberList,
-                Self::encode_utf8_val(room_name, Some(763)),
+                Self::encode_u32_string_tuple(*id, room_name, Some(763)),
             ),
 
             // NOTE: EXPERIMENTAL
-            StunAttribute::MemberEntry { socket_addr } => (
+            StunAttribute::MemberEntry { id, socket_addr } => (
                 StunAttributeType::MemberEntry,
-                Self::encode_address(socket_addr, false, transaction_id),
+                Self::encode_u32_address_tuple(*id, socket_addr, false, transaction_id),
             )
         };
 
